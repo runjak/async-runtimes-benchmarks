@@ -1,0 +1,9 @@
+./run-gtime.sh
+Running 1 task(s)
+10048
+Running 10000 task(s)
+32416
+Running 100000 task(s)
+135856
+Running 1000000 task(s)
+608224
