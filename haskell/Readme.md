@@ -7,6 +7,24 @@ It makes use of [forkIO](https://hackage.haskell.org/package/base-4.18.0.0/docs/
 
 ## Results
 
+### MainV3
+
+On Arch Linux with GHC 9.6.2,
+compiled with `ghc -O2 -o Main MainV3.hs`:
+
+```shell
+./run.sh
+Running 1 task(s)
+3908
+Running 10000 task(s)
+21632
+Running 100000 task(s)
+203716
+Running 1000000 task(s)
+2408320
+./run.sh  590.57s user 2.31s system 93% cpu 10:32.52 total
+```
+
 ### MainV2
 
 On Arch Linux with GHC 9.6.2,
