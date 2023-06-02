@@ -7,6 +7,11 @@ It makes use of [forkIO](https://hackage.haskell.org/package/base-4.18.0.0/docs/
 
 ## Results
 
+Looking at the below results - from investigating some of the times actually spent it is my impression
+that most of these setups fail to actually run all 1M lightweight threads in parallel.
+
+I'm unclear why that might be precisely, but feel tempted to speculate that there could be some kind of limit on concurrent `forkIO` executions.
+
 ### MainV6
 
 Question: Would an MVar that is used similarly to a TVar perform better?
@@ -78,6 +83,25 @@ Running 100000 task(s)
 Running 1000000 task(s)
 9342884
 ./run.sh  35.09s user 15.51s system 105% cpu 48.171 total
+```
+
+On Windows 11, WSL Ubuntu with GHC 9.6.2,
+compiled with `ghc -O2 -o Main MainV4.hs`:
+
+```shell
+time ./run.sh 
+Running 1 task(s)
+3996
+Running 10000 task(s)
+23188
+Running 100000 task(s)
+116504
+Running 1000000 task(s)
+471772
+
+real    8m43.188s
+user    8m3.249s
+sys     0m0.850s
 ```
 
 ### MainV3
@@ -156,6 +180,25 @@ Running 100000 task(s)
 Running 1000000 task(s)
 9611132
 ./run.sh  29.94s user 14.20s system 96% cpu 45.933 total
+```
+
+On Windows 11, WSL Ubuntu with GHC 9.6.2,
+compiled with `ghc -O2 -o Main MainV2.hs`:
+
+```shell
+time ./run.sh 
+Running 1 task(s)
+3988
+Running 10000 task(s)
+23244
+Running 100000 task(s)
+117452
+Running 1000000 task(s)
+470652
+
+real    8m42.557s
+user    8m2.980s
+sys     0m0.481s
 ```
 
 ### MainV1

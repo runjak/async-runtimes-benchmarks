@@ -20,8 +20,16 @@ main :: IO ()
 main = do
   taskCount <- getTaskCount
   putStrLn $ "Running " <> show taskCount <> " task(s)"
+
   semaphore <- QSemN.newQSemN 0
-  forM [1..taskCount] $ \_ -> forkIO $ do
-    threadDelay sleepMicroseconds
-    QSemN.signalQSemN semaphore 1
+  go semaphore taskCount
   QSemN.waitQSemN semaphore taskCount
+
+  where
+    go _ 0 = return ()
+    go semaphore taskCount = do
+      forkIO $ do
+        threadDelay sleepMicroseconds
+        QSemN.signalQSemN semaphore 1
+      go semaphore $ taskCount - 1
+
