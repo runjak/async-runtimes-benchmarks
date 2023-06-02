@@ -7,6 +7,26 @@ It makes use of [forkIO](https://hackage.haskell.org/package/base-4.18.0.0/docs/
 
 ## Results
 
+### MainV5
+
+In an attempt to further explore the direction of semaphores I was wondering if an [STM](https://hackage.haskell.org/package/stm-2.5.1.0/docs/Control-Concurrent-STM.html) [TVar](https://hackage.haskell.org/package/stm-2.5.1.0/docs/Control-Concurrent-STM-TVar.html) would work better.
+
+On Arch Linux with GHC 9.6.2,
+compiled with `ghc -O2 -o Main MainV5.hs`:
+
+```shell
+./run.sh
+Running 1 task(s)
+3780
+Running 10000 task(s)
+21504
+Running 100000 task(s)
+205888
+Running 1000000 task(s)
+1397188
+./run.sh  601.22s user 2.00s system 93% cpu 10:42.63 total
+```
+
 ### MainV4
 
 In contrast to previous variants MainV4 uses [General Quantity Semaphores (QSemN)](https://hackage.haskell.org/package/base-4.18.0.0/docs/Control-Concurrent-QSemN.html) to track the number of finished tasks. The hope is that by having only one shared structure to count finished tasks we could further cut down on memory usage.
@@ -45,7 +65,10 @@ Running 1000000 task(s)
 
 ### MainV3
 
-This variant works just like MainV2 but uses [TChan](https://hackage.haskell.org/package/stm-2.5.1.0/docs/Control-Concurrent-STM-TChan.html) from the [software transactional memory](https://hackage.haskell.org/package/stm-2.5.1.0/docs/Control-Concurrent-STM.html) module to satisfy a desire to learn how this tradeoff would show.
+This variant works just like MainV2 but uses [TChan](https://hackage.haskell.org/package/stm-2.5.1.0/docs/Control-Concurrent-STM-TChan.html) from the [software transactional memory](https://hackage.haskell.org/package/stm-2.5.1.0/docs/Control-Concurrent-STM.html) module.
+
+It also does away with separate channels and instead
+has a helper function `go` that reads from the shared channel the desired number of times.
 
 On Arch Linux with GHC 9.6.2,
 compiled with `ghc -O2 -o Main MainV3.hs`:
@@ -85,6 +108,21 @@ Running 100000 task(s)
 Running 1000000 task(s)
 465220
 ./run.sh  776.18s user 1.47s system 95% cpu 13:38.33 total
+```
+
+Another run at a later point in time:
+
+```shell
+./run.sh
+Running 1 task(s)
+3584
+Running 10000 task(s)
+22656
+Running 100000 task(s)
+94532
+Running 1000000 task(s)
+462912
+./run.sh  783.07s user 1.68s system 95% cpu 13:45.56 total
 ```
 
 On Arch Linux (8 threads) with GHC 9.6.2,
