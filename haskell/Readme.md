@@ -7,9 +7,45 @@ It makes use of [forkIO](https://hackage.haskell.org/package/base-4.18.0.0/docs/
 
 ## Results
 
-### Arch Linux
+### MainV2
 
-#### GHC 9.2.8
+On Arch Linux with GHC 9.6.2,
+compiled with `ghc -O2 -o Main MainV2.hs`:
+
+```shell
+./run.sh
+[1 of 2] Compiling Main             ( Main.hs, Main.o ) [Source file changed]
+[2 of 2] Linking Main [Objects changed]
+Running 1 task(s)
+3652
+Running 10000 task(s)
+22592
+Running 100000 task(s)
+93892
+Running 1000000 task(s)
+465220
+./run.sh  776.18s user 1.47s system 95% cpu 13:38.33 total
+```
+
+On Arch Linux (8 threads) with GHC 9.6.2,
+compiled with `ghc -O2 -o Main -threaded -rtsopts -with-rtsopts=-N MainV2.hs`:
+
+```shell
+./run.sh
+Running 1 task(s)
+8392
+Running 10000 task(s)
+66356
+Running 100000 task(s)
+730964
+Running 1000000 task(s)
+9611132
+./run.sh  29.94s user 14.20s system 96% cpu 45.933 total
+```
+
+### MainV1
+
+On Arch Linux with GHC 9.2.8:
 
 ```shell
 [1 of 1] Compiling Main             ( Main.hs, Main.o )
@@ -25,7 +61,7 @@ Running 1000000 task(s)
 ./run.sh  788.83s user 1.83s system 95% cpu 13:52.27 total
 ```
 
-#### GHC 9.6.2
+On Arch Linux with GHC 9.6.2:
 
 ```shell
 [1 of 2] Compiling Main             ( Main.hs, Main.o )
@@ -41,7 +77,7 @@ Running 1000000 task(s)
 ./run.sh  758.96s user 1.60s system 94% cpu 13:21.68 total
 ```
 
-### Windows 11 with WSL Ubuntu and GHC 9.2.8
+On Windows 11 with WSL Ubuntu and GHC 9.2.8:
 
 ```shell
 Running 1 task(s)
@@ -54,7 +90,7 @@ Running 1000000 task(s)
 694560
 ```
 
-### MacOS with GHC 9.6.2
+On MacOS with GHC 9.6.2:
 
 ```shell
 ./run-gtime.sh

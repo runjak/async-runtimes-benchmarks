@@ -1,4 +1,6 @@
 module Main where
+-- Compile with ghc -O2 -o Main MainV2.hs
+-- Compile with ghc -O2 -o Main -threaded -rtsopts -with-rtsopts=-N MainV2.hs
 
 import Control.Monad
 import Control.Concurrent
@@ -6,21 +8,7 @@ import Control.Concurrent.Chan
 import System.Environment (getArgs)
 
 sleepMicroseconds :: Int
-sleepMicroseconds = 10 * 1000 * 1000
-
-task :: Chan () -> IO () 
-task chan = do
-  threadDelay sleepMicroseconds
-  writeChan chan ()
-
-startTask :: IO (Chan ())
-startTask = do
-  chan <- newChan
-  forkIO $ task chan
-  return chan
-
-waitTask :: Chan () -> IO ()
-waitTask = readChan
+sleepMicroseconds = 10_000_000
 
 getTaskCount :: IO Int
 getTaskCount = do
@@ -32,5 +20,14 @@ main :: IO ()
 main = do
   taskCount <- getTaskCount
   putStrLn $ "Running " <> show taskCount <> " task(s)"
-  chans <- forM [1..taskCount] $ \_ -> startTask
-  mapM_ waitTask chans
+  go taskCount
+  where
+    go :: Int -> IO ()
+    go 0 = return ()
+    go taskCount = do
+      chan <- newChan
+      forkIO $ do
+        threadDelay sleepMicroseconds
+        writeChan chan ()
+      go $ taskCount - 1
+      readChan chan
