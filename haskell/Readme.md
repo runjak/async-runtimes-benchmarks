@@ -7,7 +7,45 @@ It makes use of [forkIO](https://hackage.haskell.org/package/base-4.18.0.0/docs/
 
 ## Results
 
+### MainV4
+
+In contrast to previous variants MainV4 uses [General Quantity Semaphores (QSemN)](https://hackage.haskell.org/package/base-4.18.0.0/docs/Control-Concurrent-QSemN.html) to track the number of finished tasks. The hope is that by having only one shared structure to count finished tasks we could further cut down on memory usage.
+
+On Arch Linux with GHC 9.6.2,
+compiled with `ghc -O2 -o Main MainV4.hs`:
+
+```shell
+./run.sh
+Running 1 task(s)
+3584
+Running 10000 task(s)
+23504
+Running 100000 task(s)
+233348
+Running 1000000 task(s)
+2470020
+./run.sh  586.33s user 2.42s system 93% cpu 10:27.97 total
+```
+
+On Arch Linux (8 threads) with GHC 9.6.2,
+compiled with `ghc -O2 -o Main -threaded -rtsopts -with-rtsopts=-N MainV4.hs`:
+
+```shell
+./run.sh
+Running 1 task(s)
+10600
+Running 10000 task(s)
+59628
+Running 100000 task(s)
+766272
+Running 1000000 task(s)
+9342884
+./run.sh  35.09s user 15.51s system 105% cpu 48.171 total
+```
+
 ### MainV3
+
+This variant works just like MainV2 but uses [TChan](https://hackage.haskell.org/package/stm-2.5.1.0/docs/Control-Concurrent-STM-TChan.html) from the [software transactional memory](https://hackage.haskell.org/package/stm-2.5.1.0/docs/Control-Concurrent-STM.html) module to satisfy a desire to learn how this tradeoff would show.
 
 On Arch Linux with GHC 9.6.2,
 compiled with `ghc -O2 -o Main MainV3.hs`:
@@ -26,6 +64,10 @@ Running 1000000 task(s)
 ```
 
 ### MainV2
+
+Instead of placing the chans in a list like MainV1 this version recursively calls a helper function `go` to establish a chain of function calls each waiting on the nested call to `go` and on it's IO threads channel.
+
+My speculation is that this variant uses less memory because it does away with the list structure.
 
 On Arch Linux with GHC 9.6.2,
 compiled with `ghc -O2 -o Main MainV2.hs`:
@@ -62,6 +104,8 @@ Running 1000000 task(s)
 ```
 
 ### MainV1
+
+This approach uses a [list of chans](https://hackage.haskell.org/package/base-4.18.0.0/docs/Control-Concurrent-Chan.html), where each IO thread sends a `()` which is read sequentially in the main thread.
 
 On Arch Linux with GHC 9.2.8:
 
