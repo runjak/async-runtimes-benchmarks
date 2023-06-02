@@ -7,6 +7,23 @@ It makes use of [forkIO](https://hackage.haskell.org/package/base-4.18.0.0/docs/
 
 ## Results
 
+### MainV6
+
+Question: Would an MVar that is used similarly to a TVar perform better?
+
+```shell
+./run.sh
+Running 1 task(s)
+8004
+Running 10000 task(s)
+30976
+Running 100000 task(s)
+208960
+Running 1000000 task(s)
+1350144
+./run.sh  660.13s user 1.77s system 99% cpu 11:02.93 total
+```
+
 ### MainV5
 
 In an attempt to further explore the direction of semaphores I was wondering if an [STM](https://hackage.haskell.org/package/stm-2.5.1.0/docs/Control-Concurrent-STM.html) [TVar](https://hackage.haskell.org/package/stm-2.5.1.0/docs/Control-Concurrent-STM-TVar.html) would work better.
