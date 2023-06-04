@@ -1,0 +1,23 @@
+	Sun Jun  4 22:23 2023 Time and Allocation Profiling Report  (Final)
+
+	   Main +RTS -N -hc -p -RTS ioref 1000000 1
+
+	total time  =       17.71 secs   (49936 ticks @ 1000 us, 20 processors)
+	total alloc = 2,262,517,368 bytes  (excludes profiling overheads)
+
+COST CENTRE MODULE SRC         %time %alloc
+
+MAIN        MAIN   <built-in>  100.0  100.0
+
+
+                                                                      individual      inherited
+COST CENTRE  MODULE                SRC             no.     entries  %time %alloc   %time %alloc
+
+MAIN         MAIN                  <built-in>      138           0  100.0  100.0   100.0  100.0
+ CAF         GHC.Conc.Signal       <entire-module> 249           0    0.0    0.0     0.0    0.0
+ CAF         GHC.Event.Poll        <entire-module> 234           0    0.0    0.0     0.0    0.0
+ CAF         GHC.Event.Thread      <entire-module> 233           0    0.0    0.0     0.0    0.0
+ CAF         GHC.IO.Encoding       <entire-module> 214           0    0.0    0.0     0.0    0.0
+ CAF         GHC.IO.Encoding.Iconv <entire-module> 212           0    0.0    0.0     0.0    0.0
+ CAF         GHC.IO.Handle.FD      <entire-module> 203           0    0.0    0.0     0.0    0.0
+ CAF         Main                  <entire-module> 145           0    0.0    0.0     0.0    0.0

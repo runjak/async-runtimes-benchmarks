@@ -12,6 +12,171 @@ that most of these setups fail to actually run all 1M lightweight threads in par
 
 I'm unclear why that might be precisely, but feel tempted to speculate that there could be some kind of limit on concurrent `forkIO` executions.
 
+### MainV7
+
+Further experimentation with Chan and QSemN. What if we bend the rules to deduplicate the waits?
+
+```haskell
+main :: IO ()
+main = do
+  taskCount <- getTaskCount
+  putStrLn $ "Running " <> show taskCount <> " task(s)"
+
+  sleepChan <- Chan.newChan
+
+  semFinished <- QSemN.newQSemN 0
+
+  forM_ [1..taskCount] $ \_ -> forkIO $ do
+    forkChan <- Chan.dupChan sleepChan
+    Chan.readChan forkChan
+    QSemN.signalQSemN semFinished 1
+  
+  threadDelay sleepMicroseconds
+  Chan.writeChan sleepChan ()
+
+  QSemN.waitQSemN semFinished taskCount
+```
+
+```shell
+Running 1 task(s)
+3920
+Running 10000 task(s)
+25508
+Running 100000 task(s)
+181908
+Running 1000000 task(s)
+2221780
+
+real    0m42.633s
+user    0m1.963s
+sys     0m0.615s
+```
+
+What if we drop the chans entirely?
+
+```haskell
+main :: IO ()
+main = do
+  taskCount <- getTaskCount
+  putStrLn $ "Running " <> show taskCount <> " task(s)"
+
+  semReady <- QSemN.newQSemN 0
+  semFinished <- QSemN.newQSemN 0
+
+  forM_ [1..taskCount] $ \_ -> forkIO $ do
+    QSemN.waitQSemN semReady 1
+    QSemN.signalQSemN semFinished 1
+  
+  threadDelay sleepMicroseconds
+  QSemN.signalQSemN semReady taskCount
+
+  QSemN.waitQSemN semFinished taskCount
+```
+
+```shell
+time ./run.sh 
+Running 1 task(s)
+4028
+Running 10000 task(s)
+30216
+Running 100000 task(s)
+271336
+Running 1000000 task(s)
+2065028
+
+real    0m42.830s
+user    0m2.188s
+sys     0m0.596s
+```
+
+What if we drop the QSemN and go for Chans entirely?
+
+```haskell
+main :: IO ()
+main = do
+  taskCount <- getTaskCount
+  putStrLn $ "Running " <> show taskCount <> " task(s)"
+
+  afterSleep <- Chan.newChan
+  
+  forkIO $ do
+    threadDelay sleepMicroseconds
+    Chan.writeChan afterSleep ()
+
+  go afterSleep taskCount
+  where
+    go afterSleep 0 = return ()
+    go afterSleep taskCount = do
+      afterTask <- Chan.newChan
+
+      forkIO $ do
+        Chan.readChan =<< Chan.dupChan afterSleep
+        Chan.writeChan afterTask ()
+      
+      go afterSleep $ taskCount - 1
+
+      Chan.readChan afterTask
+```
+
+```shell
+time ./run.sh 
+Running 1 task(s)
+4024
+Running 10000 task(s)
+31364
+Running 100000 task(s)
+181008
+Running 1000000 task(s)
+2609896
+
+real    0m41.072s
+user    0m2.348s
+sys     0m0.724s
+```
+
+What if shared sleep channel, but read+write on it?
+
+```haskell
+main :: IO ()
+main = do
+  taskCount <- getTaskCount
+  putStrLn $ "Running " <> show taskCount <> " task(s)"
+
+  sleepChan <- Chan.newChan
+  forkIO $ do
+    threadDelay sleepMicroseconds
+    Chan.writeChan sleepChan ()
+
+  go sleepChan taskCount
+  where
+    go :: Chan () -> Int -> IO ()
+    go _ 0 = return ()
+    go sleepChan taskCount = do
+      chan <- Chan.newChan
+      forkIO $ do
+        Chan.readChan sleepChan
+        Chan.writeChan sleepChan ()
+        Chan.writeChan chan ()
+      go sleepChan $ taskCount - 1
+      Chan.readChan chan
+```
+
+```shell
+time ./run.sh 
+Running 1 task(s)
+3972
+Running 10000 task(s)
+30468
+Running 100000 task(s)
+191248
+Running 1000000 task(s)
+1955396
+
+real    0m40.907s
+user    0m1.749s
+sys     0m0.693s
+```
+
 ### MainV6
 
 Question: Would an MVar that is used similarly to a TVar perform better?
