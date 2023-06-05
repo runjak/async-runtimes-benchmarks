@@ -2,3 +2,6 @@ Main
 *.hi
 *.o
 *.aux
+*.hp
+*.eventlog
+Main.prof
