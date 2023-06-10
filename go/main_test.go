@@ -3,14 +3,13 @@ package main
 import (
 	"fmt"
 	"sync"
+	"testing"
 	"time"
 )
 
-// go build
-// /usr/bin/time -f "%M" ./coroutines
-// All goroutines finished.
-// 2641924
-func main() {
+// go test -benchmem -memprofile mem.out -run=^$ -bench ^BenchmarkFoo$ coroutines
+// go tool pprof -http localhost:27374 ./coroutines mem.out
+func BenchmarkFoo(b *testing.B) {
 	numRoutines := 1_000_000
 
 	var wg sync.WaitGroup
