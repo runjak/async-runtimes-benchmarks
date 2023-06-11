@@ -21,4 +21,6 @@ Promise.all(runTasks(numTasks)).then(() => {
 // /usr/bin/time -f "%M" node ./mainV2.js 
 // 506036
 // /usr/bin/time -f "%M" deno run ./mainV2.js
-// 1M: > 30m and continuingee
+// 1M: > 30m and continuing
+// /usr/bin/time -f "%M" bun run ./mainV2.js
+// 659024
